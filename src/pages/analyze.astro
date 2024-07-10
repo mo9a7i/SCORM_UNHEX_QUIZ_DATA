@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+---
+
+<Layout title="Welcome to Astro.">
+	<main class="container prose dark:prose-invert mx-auto max-w-6xl bg-white bg-opacity-15">
+		<h1>Welcome to <span class="text-gradient">Astro</span></h1>
+		<div class="p-2">
+			<div id="output"></div>
+		</div>
+	</main>
+</Layout>
+<script>
+    import {slideBank} from '../data/all.json';
+
+    const output = document.getElementById('output') as HTMLElement;
+
+    const rntobr = (str: string)=> {
+            // Replace the \n with <br>
+            let return_string = str.split('\n').join('<br>');
+            return_string = return_string.split('\\n').join('<br>');
+            return_string = return_string.split('\\\n').join('<br>');
+            return_string = return_string.split('\r').join('<br>');
+            return_string = return_string.split('\\n').join('<br>');
+            return_string = return_string.split('\n').join('<br>');
+            return_string = return_string.split(`\\'`).join(`'`);
+            return_string = return_string.replace(/(?:\r\n|\r|\n)/g, '<br>')
+            return return_string;
+        }
+
+    const getqna = (choices, answers)=>{
+        const correct_answer_id = answers.find(answer => answer.status === 'correct').id;
+        let return_array = [];
+
+        choices.forEach(item =>{
+            const tobe_added_object = {
+                id: item.id,
+                text: item.lmstext,
+                status: false
+            }
+
+            if (item.id === `choice_${correct_answer_id}`){
+                tobe_added_object.status = true;
+            }
+            return_array.push(tobe_added_object);
+        })
+
+        return return_array;
+    }
+
+    slideBank.slides.forEach((element, index) => {
+        output.innerHTML += `<div class='mb-6'>`;
+        output.innerHTML += `<h2 class='m-0'>${index+1}. ${rntobr(element.title)}</h2>`;
+        const qna_object = getqna(element.interactions[0].choices, element.interactions[0].answers);
+        output.innerHTML += `<ul class='m-0 p-0'>`;
+        qna_object.forEach((question, index) => {
+            if(question.status){
+                output.innerHTML += `<b><li class='m-0 p-0 text-green-500 list-none'>${rntobr(question.text)} (${question.status})</li></b>`;
+            }
+            else{
+                output.innerHTML += `<li class='m-0 p-0 list-none'>${rntobr(question.text)}</li>`;
+            }
+            
+        });
+        output.innerHTML += `</ul>`;
+        
+    });
+
+
+</script>
