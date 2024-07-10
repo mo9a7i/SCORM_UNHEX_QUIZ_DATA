@@ -1,0 +1,87 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+---
+
+<Layout title="Welcome to Astro.">
+	<main class="container prose dark:prose-invert mx-auto max-w-6xl bg-white bg-opacity-15">
+	
+		<h1>Welcome to <span class="text-gradient">Astro</span></h1>
+		<p class="instructions">
+			To get started, open the directory <code>src/pages</code> in your project.<br />
+			<strong>Code Challenge:</strong> Tweak the "Welcome to Astro" message above.
+		</p>
+		<div class="p-2">
+			<label for="input">Input Text</label>
+			<textarea id="input" name="input" class="w-full p-2 rounded-md text-slate-600"></textarea>
+		</div>
+		<div class="p-2">
+			<div id="output"></div>
+		</div>
+
+	</main>
+</Layout>
+<script>
+
+	const input: HTMLTextAreaElement = document.getElementById('input') as HTMLTextAreaElement;
+    const output = document.getElementById('output') as HTMLElement;
+	const base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+
+
+	input.addEventListener('input', () => {
+        if (base64regex.test(input.value)) {
+            try {
+                // Decode the base64 input
+                const json_object = JSON.parse(atob(input.value));
+                // check if there is a d property and make it the output
+				delete json_object.v;
+				delete json_object.S;
+				delete json_object.fs;
+				delete json_object.rs;
+				delete json_object.pbs;
+				delete json_object.s;
+
+				if(json_object.d === undefined){
+					output.textContent = 'Invalid JSON';
+					return;
+				}
+
+				delete json_object.d.sm;
+				delete json_object.d.sk;
+				delete json_object.d.s;
+				delete json_object.d.sl.in;
+				delete json_object.d.sl.r;
+
+				const questions_array = json_object.d.sl.g[0].S;
+
+				output.innerHTML = `<h2 class='m-0'>${json_object.d.sl.g[0].T}</h2>`;
+				output.innerHTML += `<div>`;
+				questions_array.forEach((question, index) => {
+					const qna_object = {
+						question: question.D.d.join('/'),
+						answer: question.C.chs.find(ch => ch.c === true).t.d.join('/'),
+						other_answers: question.C.chs.filter(ch => ch.c !==true).map(ch => ch.t.d.join('/'))
+					}
+					output.innerHTML += `<h3 class='m-0'>${index + 1}. ${qna_object.question}</h3>`;
+					output.innerHTML += '<ul class="p-0 m-0">'
+					output.innerHTML += `<li class='p-0 m-0 text-green-500'><b>${qna_object.answer} (correct answer)</b></li>`;
+					qna_object.other_answers.forEach((answer) => {
+						output.innerHTML += `<li class='m-0 text-red-500'>${answer}</li>`;
+					});
+					output.innerHTML += '</ul>'
+				});
+				output.innerHTML += `</div>`;
+
+            } catch (e) {
+                // Handle any parsing errors
+				console.log(e);
+                output.textContent = 'Error parsing JSON';
+            }
+        } else {
+            // Display invalid base64 message
+            output.textContent = 'Invalid Base64';
+        }
+    });
+
+
+</script>
